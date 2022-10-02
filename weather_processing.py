@@ -20,19 +20,29 @@ data = pd.read_csv(path, sep='\s{1,3}', engine='python')
 data['Date'] = pd.to_datetime(data[["Yr", "Mo", "Dy"]].astype(str).agg(' '.join, axis=1))
 data = data.drop(columns=['Yr', 'Mo', 'Dy'])
 
+
 # TODO Check if everything is okay with the data. Create functions to delete/fix rows with strange cases and apply them
-location = [x for x in data.columns if x != 'Date']
+def fix_dataset(data):
+    location = [x for x in data.columns if x != 'Date']
 
-for i in location:
-    data[i] = data[i].replace('\,|\.', '', regex=True)
+    for i in location:
+        data[i] = data[i].replace('\,|\.', '', regex=True)
 
-for i in location:
-    data[i] = data[i].replace('^-?\w*\D\w*$|^\d{5,}$', 'NaN', regex=True)
+    for i in location:
+        data[i] = data[i].replace('^-?\w*\D\w*$|^\d{5,}$', 'NaN', regex=True)
 
-data[location] = data[location].astype(float) / 100
+    data[location] = data[location].astype(float) / 100
+
+
+fix_dataset(data)
+
 
 # TODO Write a function in order to fix date (this relate only to the year info) and apply it
-data['Date'] = data['Date'].map(lambda x: dt.datetime(x.year - 100 if x.year > 2000 else x.year, x.month, x.day))
+def fix_dates(data):
+    data['Date'] = data['Date'].map(lambda x: dt.datetime(x.year - 100 if x.year > 2000 else x.year, x.month, x.day))
+
+
+fix_dates(data)
 
 # TODO Set the right dates as the index. Pay attention at the data type, it should be datetime64[ns]
 work_data = data.set_index('Date')
